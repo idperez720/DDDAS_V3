@@ -23,7 +23,7 @@ def run_camera(colors_to_test = ['blue', 'purple', 'red', 'green', 'lime', 'yell
             mask = cv2.inRange(frame, filters[k][0], filters[k][1])
             mask = cv2.erode(mask, None, iterations=2)
             mask = cv2.dilate(mask, None, iterations=2)
-            _, cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             if(len(cnts) == 2):
                 ((x1, y1), r1) = cv2.minEnclosingCircle(cnts[0])
                 ((x2, y2), r2) = cv2.minEnclosingCircle(cnts[1])

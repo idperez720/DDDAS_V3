@@ -5,7 +5,7 @@ import os
 
 
 def click_values(event, x, y, flags, param):
-    global values, colors, counter
+    global counter
 
     if event == cv2.EVENT_RBUTTONDOWN:
         counter = np.clip(counter + 1, 0, 5)
@@ -18,11 +18,12 @@ def click_values(event, x, y, flags, param):
         values[key].append(pixels)
         print('Values registered for the ', key, ' robot ---> ', pixels)
 
-def run_calibration_camera(robot_to_filter = -1):
-    global filters, frame
+def run_calibration_camera(filters, robot_to_filter = -1):
+    global frame, counter, values
+    counter = 0
 
     cv2.namedWindow('Camera')
-    cv2.setMouseCallback('Camera', click_values)
+    cv2.setMouseCallback('Camera', click_values, param=counter)
     cap = cv2.VideoCapture(0)
 
     while(True):
@@ -68,7 +69,10 @@ def run_test_camera(colors_to_test = ['blue', 'purple', 'red', 'green', 'lime', 
     cap.release()
     cv2.destroyAllWindows()
 
-def main_calibrate_colors(mode):
+
+def main_calibrate_colors(mode, colors, n):
+    global values
+
     directory = os.path.dirname(__file__)
     path = os.path.join(directory, 'color_filters/filters.pickle')
 
@@ -86,13 +90,12 @@ def main_calibrate_colors(mode):
         filters = {}
         counter = 0
         slack = 30
-        colors = ['blue', 'purple', 'red', 'green', 'lime', 'yellow']
-        for i in range(6):
+        for i in range(n):
             values[colors[i]] = []
 
         print('_____________________________')
         print('Left click on the ', colors[counter], ' robot. Press the right click for next robot or q to quit.')
-        run_calibration_camera()
+        run_calibration_camera( filters,-1)
 
         print('_____________________________')
         keys = values.keys()
@@ -124,3 +127,4 @@ def main_calibrate_colors(mode):
             pickle.dump(filters, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         print('Filters saved!')
+

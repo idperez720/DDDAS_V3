@@ -7,7 +7,7 @@ from graphs.models import *
 from formations.formations import *
 
 class Main_Station(Camera_Server, Detector):
-    def __init__(self, robots=['blue', 'purple', 'red', 'green', 'lime', 'yellow']):
+    def __init__(self, robots, matrix, model_used):
         Camera_Server.__init__(self, robots=robots)
         Detector.__init__(self, robots=robots)
 
@@ -16,8 +16,8 @@ class Main_Station(Camera_Server, Detector):
 
         # Station variables
         self._system_info = np.zeros((4, self._n + 1)) # fx, fy, px, py
-        self._graph = path(self._n + 1)
-        leader_target, follower_displacements, _ = get_hexagonal_formation(self._n + 1, T=1)
+        self._graph = matrix
+        leader_target, follower_displacements, _ = model_used
         self._leader_target = leader_target[0, :-1]
         self._follower_displacements = follower_displacements[0, :-1, :]
 
