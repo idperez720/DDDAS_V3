@@ -20,7 +20,7 @@ class Main_Station(Camera_Server, Detector):
         leader_target, follower_displacements, _ = model_used
         self._leader_target = leader_target[0, :-1]
         self._follower_displacements = follower_displacements[0, :-1, :]
-
+        print('====================')
         # Create sockets
         self._station_sckts = []
         for addr in self._node_addresses:
@@ -62,7 +62,7 @@ class Main_Station(Camera_Server, Detector):
     def run_station(self):
         # Initialization
         for i, sckt in enumerate(self._station_sckts):
-            msg = self._msg_delimiter.join(list(map(str, self._follower_displacements[:, i])))
+            msg = self._msg_delimiter.join(list(map(str, self._follower_displacements[:, i-1])))
             sckt.sendall(bytes(msg + self._msg_tail, 'utf-8'))
         # Main loop
         while(self._keep_running[0] == 1):
@@ -99,5 +99,3 @@ class Main_Station(Camera_Server, Detector):
             sckt.close()
         print('Closed all sockets!')
 
-if __name__ == '__main__':
-    station = Main_Station(robots=['purple'])#, 'red', 'yellow'])

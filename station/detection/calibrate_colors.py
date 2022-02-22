@@ -1,3 +1,4 @@
+from warnings import filters
 import numpy as np
 import cv2
 import pickle
@@ -6,7 +7,6 @@ import os
 
 def click_values(event, x, y, flags, param):
     global counter
-
     if event == cv2.EVENT_RBUTTONDOWN:
         counter = np.clip(counter + 1, 0, 5)
         key = colors[counter]
@@ -18,18 +18,17 @@ def click_values(event, x, y, flags, param):
         values[key].append(pixels)
         print('Values registered for the ', key, ' robot ---> ', pixels)
 
-def run_calibration_camera(filters, robot_to_filter = -1):
-    global frame, counter, values
+def run_calibration_camera(robot_to_filter = -1):
+    global filters, frame, counter
     counter = 0
 
     cv2.namedWindow('Camera')
-    cv2.setMouseCallback('Camera', click_values, param=counter)
+    cv2.setMouseCallback('Camera', click_values)
     cap = cv2.VideoCapture(0)
 
     while(True):
         _, frame = cap.read()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
         if(robot_to_filter in values.keys()):
             k = robot_to_filter
             frame = cv2.inRange(frame, filters[k][0], filters[k][1])
@@ -56,7 +55,7 @@ def run_test_camera(colors_to_test = ['blue', 'purple', 'red', 'green', 'lime', 
             mask = cv2.inRange(frame, filters[k][0], filters[k][1])
             mask = cv2.erode(mask, None, iterations=2)
             mask = cv2.dilate(mask, None, iterations=2)
-            _, cnts, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            cnts, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             if len(cnts) > 0:
                 for c in cnts:
                     ((x, y), radius) = cv2.minEnclosingCircle(c)
@@ -70,8 +69,11 @@ def run_test_camera(colors_to_test = ['blue', 'purple', 'red', 'green', 'lime', 
     cv2.destroyAllWindows()
 
 
-def main_calibrate_colors(mode, colors, n):
+def main_calibrate_colors(mode, colors_input, n):
+    global colors
     global values
+    colors = colors_input
+    global filters
 
     directory = os.path.dirname(__file__)
     path = os.path.join(directory, 'color_filters/filters.pickle')
@@ -95,7 +97,7 @@ def main_calibrate_colors(mode, colors, n):
 
         print('_____________________________')
         print('Left click on the ', colors[counter], ' robot. Press the right click for next robot or q to quit.')
-        run_calibration_camera( filters,-1)
+        run_calibration_camera()
 
         print('_____________________________')
         keys = values.keys()

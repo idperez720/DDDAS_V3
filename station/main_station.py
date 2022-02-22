@@ -31,6 +31,9 @@ def first_choice_option(first_choice):
     global inserting_colors
     global colors
     global N_max
+    global N
+    N_max = 6
+    N = 6
 
     if first_choice == "1":
         print("""-----------------------------------------------------------------------------------------------\n 
@@ -71,10 +74,9 @@ def first_choice_option(first_choice):
             break
 
         inserting_colors = False
-
         print(""" Initializing... \n Select a region of the camera image in the color that identifies each robot""")
 
-        main_calibrate_colors("calibrate", colors)
+        main_calibrate_colors("calibrate", colors, N)
 
         print("""-------------------------------------------------------------------------------------------------\n 
                 Calibration developed succesfully! Before continuing it is recommended to further develop a debug 
@@ -159,28 +161,28 @@ def construct_personalized_matrix():
 
 def obtain_predefined_model(formation_selec, matrix_selec, mode):
     global N_max
-    leader_target, follower_displacements, _ = None, None, None
+    leader_target, follower_displacements, _  = None, None, None
     Matrix = None
     if formation_selec == "G formation":
-        leader_target, follower_displacements, _ = get_G_formation()
+        leader_target, follower_displacements, _ = get_G_formation(N_max, T=1)
     elif formation_selec == "I formation":
-        leader_target, follower_displacements, _ = get_I_formation()
+        leader_target, follower_displacements, _ = get_I_formation(N_max, T=1)
     elif formation_selec == "A formation":
-        leader_target, follower_displacements, _ = get_A_formation()
+        leader_target, follower_displacements, _ = get_A_formation(N_max, T=1)
     elif formation_selec == "P formation":
-        leader_target, follower_displacements, _ = get_P_formation()
+        leader_target, follower_displacements, _ = get_P_formation(N_max, T=1)
     elif formation_selec == "GIAP formation":
-        leader_target, follower_displacements, _ = get_GIAP_formation()
+        leader_target, follower_displacements, _ = get_GIAP_formation(N_max, T=1)
     elif formation_selec == "Diagonal formation":
-        leader_target, follower_displacements, _ = get_diagonal_formation()
+        leader_target, follower_displacements, _ = get_diagonal_formation(N_max, T=1)
     elif formation_selec == "Triangle formation":
-        leader_target, follower_displacements, _ = get_triangle_formation()
+        leader_target, follower_displacements, _ = get_triangle_formation(N_max, T=1)
     elif formation_selec == "Horizontal line formation":
-        leader_target, follower_displacements, _ = get_horizontal_line_formation()
+        leader_target, follower_displacements, _ = get_horizontal_line_formation(N_max, T=1)
     elif formation_selec == "Vertical line formation":
-        leader_target, follower_displacements, _ = get_vertical_line_formation()
+        leader_target, follower_displacements, _ = get_vertical_line_formation(N_max, T=1)
     elif formation_selec == "Hexagonal formation":
-        leader_target, follower_displacements, _ = get_hexagonal_formation()
+        leader_target, follower_displacements, _ = get_hexagonal_formation(N_max, T=1)
 
     num = int(N_max)
 
@@ -195,7 +197,7 @@ def obtain_predefined_model(formation_selec, matrix_selec, mode):
     elif matrix_selec == "path":
         Matrix = path(num)
     elif matrix_selec == "erdos renyi":
-        Matrix = erdos_enryi(num)
+        Matrix = erdos_renyi(num)
     elif matrix_selec == "watts strogatz":
         Matrix = watts_strogatz(num)
     elif matrix_selec == "barabasi albert":
@@ -210,15 +212,16 @@ def obtain_predefined_model(formation_selec, matrix_selec, mode):
 def second_choice_fun(second_selection):
     global N_max
     global colors
-
-    if second_selection == "1":
-        formation_options = ["Formatter", "G formation", "I formation", "A formation", "P formation", "GIAP formation",
+    formation_options = ["G formation", "I formation", "A formation", "P formation", "GIAP formation",
                              "Diagonal formation", "Triangle formation", "Horizontal line formation",
                              "Vertical line formation",
                              "Hexagonal formation"]
-        adyacence_options = ["complete", "empty", "Regular ring lattice", "cycle", "path", "erdos renyi",
+    adyacence_options = ["complete", "empty", "Regular ring lattice", "cycle", "path", "erdos renyi",
                              "watts strogatz",
                              "barabasi albert"]
+
+    if second_selection == "1":
+        
         print("""\n There are a wide variety of both formations and adyacence matrixes. Firstly, regarding the formations
                  this platform supports: \n
                  1. G formation \n
@@ -233,10 +236,10 @@ def second_choice_fun(second_selection):
                  10. Hexagonal formation \n
                  This predifed formations were defined for WORKING ONLY with 6 agents! This means using more or less
                  than this number would lead the system to crush.""")
-        formation_num = int(input("Select one of the previous formations: "))
+        formation_num = int(input("Select one of the previous formations: "))-1
         selecting = True
         while selecting:
-            if formation_num not in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
+            if formation_num not in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]:
                 print("Incorrect selection, try again")
                 formation = input("Please, select one of the previous formations: ")
             else:
@@ -254,20 +257,22 @@ def second_choice_fun(second_selection):
                     Even if this methods allow implementation with different agents, the previous restriction on the
                     number of agents force this arquitecture to consider only 6x6 matrixes.""")
 
-        matrix_num = int(input("Select one of the previous adyacence matrixes: "))
+        matrix_num = int(input("Select one of the previous adyacence matrixes: "))-1
         selecting_m = True
         while selecting_m:
-            if matrix_num not in [1, 2, 3, 4, 5, 6, 7, 8]:
+            if matrix_num not in [0, 1, 2, 3, 4, 5, 6, 7]:
                 print("Incorrect selection, try again")
                 formation = input("Please, select one of the previous adyacence matrixes: ")
             else:
-                print("adyacence matrix " + adyacence_options[matrix_num] + "was successfully choosed")
+                print("adyacence matrix " + adyacence_options[matrix_num] + " was successfully choosed")
                 selecting_m = False
         print("Beginning simulation with adyacence matrix " + adyacence_options[matrix_num] + " and formation " +
               formation_options[formation_num])
 
-        matrix = obtain_predefined_model(adyacence_options[matrix_num], formation_options[formation_num], 1)
-        model_used = obtain_predefined_model(adyacence_options[matrix_num], formation_options[formation_num], 2)
+
+        matrix = obtain_predefined_model(formation_options[formation_num], adyacence_options[matrix_num], 2)
+        model_used = obtain_predefined_model(formation_options[formation_num], adyacence_options[matrix_num], 1)
+        
         Main_Station(colors, matrix, model_used)
 
     elif second_selection == "2":
@@ -330,11 +335,13 @@ def main():
 
     print(""" _______________________________________________________ \n 
                   1. General idea of the system \n
-                  2. Calibrate camara filters \n
+                  2. Calibrate camera filters \n
                   3. Set IP addresses for both E-puck and Raspberries \n
                   4. Run simulation""")
     first_choice = input("Please, select one of the previous options: ")
     first_error = True
+    pass_2 = True
+    pass_3 = True
 
     while first_error:
         if first_choice not in ["1", "2", "3", "4"]:
@@ -344,13 +351,15 @@ def main():
             first_choice_option(first_choice)
             first_error = False
         elif first_choice == "2":
-            first_choice_option(first_choice)
             pass_2 = True
+            first_choice_option(first_choice)
+            
             print("-------------------------------------------------------El pass 2 is ", pass_2)
             first_error = False
         elif first_choice == "3":
-            first_choice_option(first_choice)
             pass_3 = True
+            first_choice_option(first_choice)
+            
             print("------------------------------------------------------El pass 3 is ", pass_3)
             first_error = False
         else:
