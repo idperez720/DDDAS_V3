@@ -1,5 +1,5 @@
 
-
+import os
 
 def run_attacked(dir):
     exec(dir + "/run_node.py")
