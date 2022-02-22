@@ -8,6 +8,16 @@ from run_station import Main_Station
 
 sys.path.append("./")
 
+def save_model(matrix, model, colors):
+
+    file = {}
+    file['Matrix'] = matrix
+    file['Model'] = model
+    file['Colors'] = colors
+
+    with open('model.pickle', 'wb') as handle:
+        pickle.dump(file, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
 
 def input_colors(N):
     print("Please, enter the name of the color that identify each robot you are working with")
@@ -269,11 +279,14 @@ def second_choice_fun(second_selection):
         print("Beginning simulation with adyacence matrix " + adyacence_options[matrix_num] + " and formation " +
               formation_options[formation_num])
 
+        matrix = obtain_predefined_model(adyacence_options[matrix_num], formation_options[formation_num], 1)
+        model_used = obtain_predefined_model(adyacence_options[matrix_num], formation_options[formation_num], 2)
+        save_model(matrix, model_used, colors)
+        print('Model saved!')
+        print("Executing station main file")
+        execfile("run_station.py")
 
-        matrix = obtain_predefined_model(formation_options[formation_num], adyacence_options[matrix_num], 2)
-        model_used = obtain_predefined_model(formation_options[formation_num], adyacence_options[matrix_num], 1)
-        
-        Main_Station(colors, matrix, model_used)
+
 
     elif second_selection == "2":
         print("""\n For defining the formation of the agents it is needed to the user to define the distance between

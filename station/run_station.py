@@ -1,3 +1,4 @@
+
 import numpy as np
 import multiprocessing as mp
 import socket, time
@@ -5,6 +6,12 @@ from communication.camera_server import Camera_Server
 from detection.detector import Detector
 from graphs.models import *
 from formations.formations import *
+import pickle
+
+def import_model():
+    with open('model.pickle', 'rb') as handle:
+        dict = pickle.load(handle)
+    return  dict
 
 class Main_Station(Camera_Server, Detector):
     def __init__(self, robots, matrix, model_used):
@@ -20,7 +27,7 @@ class Main_Station(Camera_Server, Detector):
         leader_target, follower_displacements, _ = model_used
         self._leader_target = leader_target[0, :-1]
         self._follower_displacements = follower_displacements[0, :-1, :]
-        print('====================')
+
         # Create sockets
         self._station_sckts = []
         for addr in self._node_addresses:
@@ -62,7 +69,7 @@ class Main_Station(Camera_Server, Detector):
     def run_station(self):
         # Initialization
         for i, sckt in enumerate(self._station_sckts):
-            msg = self._msg_delimiter.join(list(map(str, self._follower_displacements[:, i-1])))
+            msg = self._msg_delimiter.join(list(map(str, self._follower_displacements[:, i])))
             sckt.sendall(bytes(msg + self._msg_tail, 'utf-8'))
         # Main loop
         while(self._keep_running[0] == 1):
@@ -99,3 +106,10 @@ class Main_Station(Camera_Server, Detector):
             sckt.close()
         print('Closed all sockets!')
 
+if __name__ == '__main__':
+    file = import_model()
+    matrix = file['Matrix']
+    model = file['Model']
+    colors = file['Colors']
+
+    station = Main_Station(robots=colors, matrix=matrix, model_used=model)
