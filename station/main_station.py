@@ -1,10 +1,11 @@
-import sys
+import sys, os
 import numpy as np
 from detection.calibrate_colors import main_calibrate_colors
 from communication.blink_to_identify import main_blink_to_identify
 from graphs.models import *
 from formations.formations import *
-from run_station import Main_Station
+from run_station import run_station
+import pickle
 
 sys.path.append("./")
 
@@ -173,6 +174,7 @@ def obtain_predefined_model(formation_selec, matrix_selec, mode):
     global N_max
     leader_target, follower_displacements, _  = None, None, None
     Matrix = None
+    
     if formation_selec == "G formation":
         leader_target, follower_displacements, _ = get_G_formation(N_max, T=1)
     elif formation_selec == "I formation":
@@ -253,7 +255,7 @@ def second_choice_fun(second_selection):
                 print("Incorrect selection, try again")
                 formation = input("Please, select one of the previous formations: ")
             else:
-                print("Formation " + formation_options[formation_num] + "was successfully choosed")
+                print("Formation " + formation_options[formation_num] + " was successfully choosed")
                 selecting = False
         print("""\n Finally, regarding the different adyacence matrixes available there are: \n 
                     1. Complete \n
@@ -279,13 +281,12 @@ def second_choice_fun(second_selection):
         print("Beginning simulation with adyacence matrix " + adyacence_options[matrix_num] + " and formation " +
               formation_options[formation_num])
 
-        matrix = obtain_predefined_model(adyacence_options[matrix_num], formation_options[formation_num], 1)
-        model_used = obtain_predefined_model(adyacence_options[matrix_num], formation_options[formation_num], 2)
+        matrix = obtain_predefined_model(formation_options[formation_num], adyacence_options[matrix_num], 2)
+        model_used = obtain_predefined_model(formation_options[formation_num], adyacence_options[matrix_num], 1)
         save_model(matrix, model_used, colors)
         print('Model saved!')
         print("Executing station main file")
-        execfile("run_station.py")
-
+        run_station()
 
 
     elif second_selection == "2":

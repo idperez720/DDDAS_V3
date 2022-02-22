@@ -4,22 +4,31 @@ from _thread import start_new_thread
 
 class Camera_Server():
     def __init__(self, robots=['blue', 'purple', 'red', 'green', 'lime', 'yellow']):
-
+        
         # Core variables
         self._n = len(robots)
+        print(len(robots))
         self._clients = []
 
         # Load addresses
         directory = os.path.dirname(__file__)
         path = os.path.join(directory, 'ip_addresses/addresses.pickle')
+        
         with open(path, 'rb') as handle:
             self._robots_addresses = pickle.load(handle)
+        print(robots)
         self._keys_camera_server = robots
+        print(self._keys_camera_server)
 
         # RPI addresses
         self._node_addresses = []
         for key in self._keys_camera_server:
+            print(key)
+            print(self._robots_addresses[key][-1])
             self._node_addresses.append(self._robots_addresses[key][-1])
+            
+       
+        
 
         # Params
         self._buffer_size = 256

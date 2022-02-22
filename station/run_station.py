@@ -1,4 +1,3 @@
-
 import numpy as np
 import multiprocessing as mp
 import socket, time
@@ -69,7 +68,7 @@ class Main_Station(Camera_Server, Detector):
     def run_station(self):
         # Initialization
         for i, sckt in enumerate(self._station_sckts):
-            msg = self._msg_delimiter.join(list(map(str, self._follower_displacements[:, i])))
+            msg = self._msg_delimiter.join(list(map(str, self._follower_displacements[:, i-1])))
             sckt.sendall(bytes(msg + self._msg_tail, 'utf-8'))
         # Main loop
         while(self._keep_running[0] == 1):
@@ -77,7 +76,7 @@ class Main_Station(Camera_Server, Detector):
             self.update_mp_targets()
             time.sleep(self._dt)
             for i, sckt in enumerate(self._station_sckts):
-                neighbors_info = self._system_info[:, np.where(self._graph[i+1, :] == 1)].reshape(-1)
+                neighbors_info = self._system_info[:, np.where(self._graph[i, :] == 1)].reshape(-1)
                 msg = self._msg_delimiter.join(list(map(str, neighbors_info)))
                 sckt.sendall(bytes(msg + self._msg_tail, 'utf-8'))
 
@@ -106,10 +105,9 @@ class Main_Station(Camera_Server, Detector):
             sckt.close()
         print('Closed all sockets!')
 
-if __name__ == '__main__':
+def run_station():
     file = import_model()
     matrix = file['Matrix']
     model = file['Model']
     colors = file['Colors']
-
-    station = Main_Station(robots=colors, matrix=matrix, model_used=model)
+    Main_Station(robots=colors, matrix=matrix, model_used=model)

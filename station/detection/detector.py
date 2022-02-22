@@ -60,7 +60,7 @@ class Detector():
                 mask = cv2.inRange(frame, self._filters[k][1][0], self._filters[k][1][1])
                 mask = cv2.erode(mask, None, iterations=2)
                 mask = cv2.dilate(mask, None, iterations=2)
-                _, cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 id = self._filters[k][0]
                 #self._detected_flag[id] = 0
                 if(len(cnts) == 2):
