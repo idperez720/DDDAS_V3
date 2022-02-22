@@ -1,11 +1,13 @@
 
 import os
+from main_node import *
+from main_node_attack import * 
 
 def run_attacked(dir):
-    exec(dir + "/run_node.py")
+    main_node()
 
 def run_regular(dir):
-    exec( "run_node.py")
+    main_atack()
 
 def main():
     selecting = True
