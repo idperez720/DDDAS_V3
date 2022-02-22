@@ -1,16 +1,15 @@
-import sys, os
+import sys
 import numpy as np
 from detection.calibrate_colors import main_calibrate_colors
 from communication.blink_to_identify import main_blink_to_identify
 from graphs.models import *
 from formations.formations import *
-from run_station import run_station
-import pickle
+from run_station import Main_Station
 
 sys.path.append("./")
 
-def save_model(matrix, model, colors):
 
+def save_model(matrix, model, colors):
     file = {}
     file['Matrix'] = matrix
     file['Model'] = model
@@ -89,22 +88,6 @@ def first_choice_option(first_choice):
 
         main_calibrate_colors("calibrate", colors, N)
 
-        print("""-------------------------------------------------------------------------------------------------\n 
-                Calibration developed succesfully! Before continuing it is recommended to further develop a debug 
-                 process. The circles with representative color of each robot should be seen surrounded by a green line.
-                  If anythings seems odd, then you should consider perform again calibration process. Do you want to 
-                  start the debug process?""")
-        answer = input("y/n: ")
-        asking = True
-        while asking:
-            if answer not in ["y", "n", "yes", "not"]:
-                print("Incorrect selection, try again")
-                answer = input("y/n: ")
-            elif answer == "y" or answer == "yes":
-                main_calibrate_colors("not_calibrate")
-                break
-            else:
-                break
         print("Returning to main section...")
         input("Press [ENTER] to continue...")
 
@@ -129,13 +112,23 @@ def first_choice_option(first_choice):
             if N_max < N:
                 print("Total number of robots can not be greater than the number of robots to identify!!")
                 pass
-
             colors = input_colors(N)
             break
-
         inserting_colors = False
         main_blink_to_identify(colors, N, N_max)
         input("Press [ENTER] to continue...")
+    elif first_choice == "4":
+
+        print("\n Starting color selection...")
+        while inserting_colors:
+
+            N = int(input("Input the number of robots to identify: "))
+            N_max = int(input("Input the total number of robots you are currently working with: "))
+            if N_max < N:
+                print("Total number of robots can not be greater than the number of robots to identify!!")
+                pass
+            colors = input_colors(N)
+
     else:
         start_sim()
 
@@ -172,9 +165,8 @@ def construct_personalized_matrix():
 
 def obtain_predefined_model(formation_selec, matrix_selec, mode):
     global N_max
-    leader_target, follower_displacements, _  = None, None, None
+    leader_target, follower_displacements, _ = None, None, None
     Matrix = None
-    
     if formation_selec == "G formation":
         leader_target, follower_displacements, _ = get_G_formation(N_max, T=1)
     elif formation_selec == "I formation":
@@ -221,19 +213,110 @@ def obtain_predefined_model(formation_selec, matrix_selec, mode):
         return Matrix
 
 
+def generate_model():
+    global N_max
+    n = N_max
+
+    print("""\n In orden to generate a personalized formation it is needed to initialize different parameters such as: \n
+              1. T: Total number of position calculations \n
+              2. dx: x-differential displacement value \n
+              3. dy: y-differential displacement value \n
+              4. leadex_xy: Reference coordinates value for leader  \n
+              5. deltas:  X and Y distances from the leader to the rest of the agents \n
+              Hence, once these parameters are initialized a whole new formation can be defined. In general it is advicible
+              that dx, dy = 15 and T be a large number, but even if they do not satisfy these conditions the system can 
+              still work. """)
+
+    asking_params = True
+
+    print("""By default these parameters value are defined as follows: \n
+             T = 500 \n
+             dx = 15 \n
+             dy = 15 \n
+             leadex_xy = [60,60] \n
+             This means the only parameter the user has to fulfill is delta variable. This param contains two list with """ +
+          str(n - 1) + """ entries, one per each no leader agent. """)
+
+    T = 500
+    dx = 15
+    dy = 15
+    leadex_xy = [60, 60]
+    delta = None
+    while asking_params:
+        print("""\n What parameter do you want to change?\n
+              1. T\n
+              2. dx \n
+              3. dy \n
+              4. leadex_xy \n
+              5. deltas \n  """)
+        selecction = input("Select one parameter or press [ENTER] to continue: ")
+
+        if selecction not in ["1", "2", "3", "4", "5", None]:
+            print("Selection incorrect! Please try again...")
+        elif selecction == "1":
+            try:
+                T = int(input("Enter a new value for T. Only int values: "))
+            except:
+                print("Incorrect input. Please try again")
+                pass
+        elif selecction == "2":
+            try:
+                dx = int(input("Enter a new value for dx. Only int values: "))
+            except:
+                print("Incorrect input. Please try again")
+                pass
+        elif selecction == "3":
+            try:
+                dy = int(input("Enter a new value for dy. Only int values: "))
+            except:
+                print("Incorrect input. Please try again")
+                pass
+        elif selecction == "4":
+            try:
+                leadex_xy = input("Enter a new value for leadex_xy as two numbers separated by an SPACE: ").split()
+                leadex_xy = np.array(leadex_xy, dtype=float)
+                if len(leadex_xy) != 2:
+                    print("Incorrect input. Please try again")
+                    leadex_xy = [60, 60]
+            except:
+                print("Incorrect input. Please try again")
+                pass
+        elif selecction == "5":
+            x_dis = input(
+                "Enter values of distances on x-axis as a list of " + str(n - 1) + "separated by an SPACE: ").split()
+            x_dis = np.array(x_dis, dtype=float)
+            y_dis = input(
+                "Enter values of distances on y-axis as a list of " + str(n - 1) + "separated by an SPACE: ").split()
+            y_dis = np.array(y_dis, dtype=float)
+
+            if len(x_dis) != n - 1 or len(y_dis) != n - 1:
+                print("Incorrect input. Please try again")
+            else:
+                delta = np.zeros((2, n - 1))
+                delta[0, :] = y_dis
+                delta[1, :] = x_dis
+        else:
+            if delta != None:
+                print("Parameters initialized correctly!")
+                asking_params = False
+            else:
+                print("Delta parameter remain unchaged, please define it first!")
+        return formatter(n, T, dx, dy, leader_xy, deltas)
+
+
 def second_choice_fun(second_selection):
     global N_max
     global colors
     formation_options = ["G formation", "I formation", "A formation", "P formation", "GIAP formation",
-                             "Diagonal formation", "Triangle formation", "Horizontal line formation",
-                             "Vertical line formation",
-                             "Hexagonal formation"]
+                         "Diagonal formation", "Triangle formation", "Horizontal line formation",
+                         "Vertical line formation",
+                         "Hexagonal formation"]
     adyacence_options = ["complete", "empty", "Regular ring lattice", "cycle", "path", "erdos renyi",
-                             "watts strogatz",
-                             "barabasi albert"]
+                         "watts strogatz",
+                         "barabasi albert"]
 
     if second_selection == "1":
-        
+
         print("""\n There are a wide variety of both formations and adyacence matrixes. Firstly, regarding the formations
                  this platform supports: \n
                  1. G formation \n
@@ -248,14 +331,14 @@ def second_choice_fun(second_selection):
                  10. Hexagonal formation \n
                  This predifed formations were defined for WORKING ONLY with 6 agents! This means using more or less
                  than this number would lead the system to crush.""")
-        formation_num = int(input("Select one of the previous formations: "))-1
+        formation_num = int(input("Select one of the previous formations: ")) - 1
         selecting = True
         while selecting:
             if formation_num not in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]:
                 print("Incorrect selection, try again")
                 formation = input("Please, select one of the previous formations: ")
             else:
-                print("Formation " + formation_options[formation_num] + " was successfully choosed")
+                print("Formation " + formation_options[formation_num] + "was successfully choosed")
                 selecting = False
         print("""\n Finally, regarding the different adyacence matrixes available there are: \n 
                     1. Complete \n
@@ -269,7 +352,7 @@ def second_choice_fun(second_selection):
                     Even if this methods allow implementation with different agents, the previous restriction on the
                     number of agents force this arquitecture to consider only 6x6 matrixes.""")
 
-        matrix_num = int(input("Select one of the previous adyacence matrixes: "))-1
+        matrix_num = int(input("Select one of the previous adyacence matrixes: ")) - 1
         selecting_m = True
         while selecting_m:
             if matrix_num not in [0, 1, 2, 3, 4, 5, 6, 7]:
@@ -281,20 +364,22 @@ def second_choice_fun(second_selection):
         print("Beginning simulation with adyacence matrix " + adyacence_options[matrix_num] + " and formation " +
               formation_options[formation_num])
 
-        matrix = obtain_predefined_model(formation_options[formation_num], adyacence_options[matrix_num], 2)
-        model_used = obtain_predefined_model(formation_options[formation_num], adyacence_options[matrix_num], 1)
+        matrix = obtain_predefined_model(adyacence_options[matrix_num], formation_options[formation_num], 1)
+        model_used = obtain_predefined_model(adyacence_options[matrix_num], formation_options[formation_num], 2)
         save_model(matrix, model_used, colors)
         print('Model saved!')
         print("Executing station main file")
-        run_station()
+        execfile("run_station.py")
+
 
 
     elif second_selection == "2":
         print("""\n For defining the formation of the agents it is needed to the user to define the distance between
                   the agents. Note this definition can cause implementation problems as it might be ambigous so be 
-                  aware of this before trying to run any new arquitecture. PARTE DE JOSE VICENTE!!!""")
+                  aware of this before trying to run any new arquitecture""")
 
-        # model used = SOME FUNCTION
+        model_used = generate_model()
+
         print("\n On the other hand, regarding the association matrix it must be " + str(N_max) + "x" + str(N_max) + """as
                it is determined by the total number of agents. Please, use the following format for developing such matrix:
                \n input: number, x_coor, y_coor \n
@@ -302,7 +387,10 @@ def second_choice_fun(second_selection):
                to be replaced in the matrix. It can only contain 1 or 0 values. Finlly, x_coor and y_coor defines the 
                position the number is going to be placed and they can take values from 1 to """ + str(N_max))
         matrix = construct_personalized_matrix()
-        # Main_Station(colors, matrix, model_used)
+        save_model(matrix, model_used, colors)
+        print('Model saved!')
+        print("Executing station main file")
+        execfile("run_station.py")
 
 
 def start_sim():
@@ -351,50 +439,29 @@ def main():
                   1. General idea of the system \n
                   2. Calibrate camera filters \n
                   3. Set IP addresses for both E-puck and Raspberries \n
-                  4. Run simulation""")
+                  4. Set robot colors
+                  5. Run simulation""")
     first_choice = input("Please, select one of the previous options: ")
     first_error = True
     pass_2 = True
     pass_3 = True
 
     while first_error:
-        if first_choice not in ["1", "2", "3", "4"]:
+        if first_choice not in ["1", "2", "3", "4", "5"]:
             print("Incorrect selection, try again")
             first_choice = input("Please, select one of the previous options: ")
-        elif first_choice == "1":
+        elif first_choice in ["1", "2", "3", "4"]:
             first_choice_option(first_choice)
             first_error = False
-        elif first_choice == "2":
-            pass_2 = True
+        elif first_choice == "5":
+            print("You are ready to start simulation!")
             first_choice_option(first_choice)
-            
-            print("-------------------------------------------------------El pass 2 is ", pass_2)
             first_error = False
-        elif first_choice == "3":
-            pass_3 = True
-            first_choice_option(first_choice)
-            
-            print("------------------------------------------------------El pass 3 is ", pass_3)
-            first_error = False
+
         else:
-            if pass_2 and pass_3 and first_choice == "4":
-                print("You are ready to start simulation!")
-                first_choice_option(first_choice)
-                first_error = False
-            elif not pass_2:
-                print("Camara filter calibration is missing!")
-                input("Press [ENTER] to continue...")
-                first_error = False
-
-            elif not pass_3:
-                print("Raspberry and e-puck IPs weren't setted...")
-                input("Press [ENTER] to continue...")
-                first_error = False
-
-            else:
-                print("Something has gone wrong, please try again: ")
-                input("Press [ENTER] to continue...")
-                first_error = False
+            print("Something has gone wrong, please try again: ")
+            input("Press [ENTER] to continue...")
+            first_error = False
     main()
 
 

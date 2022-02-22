@@ -1,8 +1,8 @@
 import numpy as np
 import sys, time
 from communication.node_communicator import Node_Comunicator
-from fsm.finite_state_machine import *
-#from fsm.finite_state_machine_with_reconfiguration import *
+#from fsm.finite_state_machine import *
+from fsm.finite_state_machine_with_reconfiguration import *
 
 # Creates server socket and launches server
 communicator = Node_Comunicator()
