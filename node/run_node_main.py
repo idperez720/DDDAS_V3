@@ -1,7 +1,7 @@
 
 import os
-from main_node import *
-from main_node_attack import * 
+from run_node import *
+from run_node_attack import * 
 
 def run_attacked(dir):
     main_node()
