@@ -6,6 +6,7 @@ from fsm.finite_state_machine_with_reconfiguration import *
 
 def main_atack():
     # Creates server socket and launches server
+    print("Attack began")
     communicator = Node_Comunicator()
     communicator.bind_server_socket()
     communicator.run_server()
