@@ -3,17 +3,14 @@ import os
 from run_node import *
 from run_node_attacked import * 
 
-def run_attacked(dir):
-    main_node()
-
-def run_regular(dir):
+def run_attacked():
     main_atack()
+
+def run_regular():
+    main_node()
 
 def main():
     selecting = True
-
-    dir = os.path.dirname(os.path.abspath(__file__))
-
     while selecting:
         print("""\n Welcome! 
                     1. Run regular node \n
@@ -24,9 +21,9 @@ def main():
             print("Incorrect selection, try again")
             formation = input("Please, select one of the previous formations: ")
         elif selection == 1:
-            run_regular(dir)
+            run_regular()
         else:
-            run_atacked(dir)
+            run_attacked()
 
 if __name__ == "__main__":
     main()
